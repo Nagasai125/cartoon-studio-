@@ -1,0 +1,61 @@
+import type { DashboardSnapshot } from './types'
+
+export const demoSnapshot: DashboardSnapshot = {
+  generatedAt: '2026-09-03T14:32:00Z',
+  mode: 'demo',
+  metrics: [
+    { label: 'This week', value: '3 episodes', detail: '1 active, 2 queued', tone: 'neutral' },
+    { label: 'Needs review', value: '1 episode', detail: 'Final QA passed', tone: 'warning' },
+    { label: 'Quality gates', value: '24 / 25', detail: 'One audio warning', tone: 'positive' },
+    { label: 'Monthly spend', value: '$42.18', detail: 'Budget not configured', tone: 'neutral' },
+  ],
+  activeEpisode: {
+    id: 'ep_letter_b',
+    title: 'The Busy Letter B',
+    objective: 'Recognize the B sound and identify three words that begin with B.',
+    format: 'Story with song',
+    state: 'scene_production',
+    progress: 66,
+    sceneProgress: '8 of 12 scenes',
+    cost: '$8.42',
+    scheduledFor: 'Monday, 9:00 AM',
+  },
+  upcomingEpisodes: [
+    {
+      id: 'ep_brushing',
+      title: 'Mina Brushes Bright',
+      objective: 'Practice the sequence of brushing teeth with caregiver support.',
+      format: 'Daily routine',
+      state: 'queued',
+      progress: 0,
+      sceneProgress: 'Not started',
+      cost: '$0.00',
+      scheduledFor: 'Wednesday, 9:00 AM',
+    },
+    {
+      id: 'ep_shapes',
+      title: 'Shapes at the Park',
+      objective: 'Find circles, squares, and triangles in familiar places.',
+      format: 'Interactive story',
+      state: 'queued',
+      progress: 0,
+      sceneProgress: 'Not started',
+      cost: '$0.00',
+      scheduledFor: 'Friday, 9:00 AM',
+    },
+  ],
+  events: [
+    { id: 'evt_5', time: '10:17', title: 'Scene 8 started', detail: 'Illustration and voice timing submitted.', status: 'active' },
+    { id: 'evt_4', time: '10:14', title: 'Scene 7 repaired', detail: 'Character palette check now passes.', status: 'complete' },
+    { id: 'evt_3', time: '10:08', title: 'Scene 7 flagged', detail: 'Sleeve color drifted from the character bible.', status: 'warning' },
+    { id: 'evt_2', time: '09:56', title: 'Storyboard approved automatically', detail: 'Narrative, pacing, and interaction checks passed.', status: 'complete' },
+    { id: 'evt_1', time: '09:42', title: 'Sources locked', detail: 'Four source snapshots attached to this version.', status: 'complete' },
+  ],
+  library: {
+    sources: 128,
+    reusableAssets: 642,
+    staleSources: 3,
+    missingRights: 0,
+    storage: '18.4 GB',
+  },
+}

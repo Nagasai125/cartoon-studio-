@@ -1,0 +1,18 @@
+{
+  "name": "cartoon-studio",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/dashboard"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=@cartoon-studio/dashboard",
+    "build": "npm run build --workspace=@cartoon-studio/dashboard",
+    "lint": "npm run lint --workspace=@cartoon-studio/dashboard",
+    "test": "npm run test --workspace=@cartoon-studio/dashboard",
+    "typecheck": "npm run typecheck --workspace=@cartoon-studio/dashboard"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

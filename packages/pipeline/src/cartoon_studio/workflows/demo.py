@@ -1,5 +1,6 @@
 from datetime import UTC, datetime
 from threading import Lock
+from typing import Literal
 
 from cartoon_studio.domain.api_models import (
     DashboardSnapshot,
@@ -26,7 +27,8 @@ DEMO_STATES = [
 
 
 class DemoStudio:
-    def __init__(self) -> None:
+    def __init__(self, mode: Literal["live", "demo"] = "live") -> None:
+        self.mode: Literal["live", "demo"] = mode
         self.state_index = 5
         self._lock = Lock()
         self.events: list[PipelineEvent] = [
@@ -72,7 +74,7 @@ class DemoStudio:
         progress = round(((self.state_index + 1) / len(DEMO_STATES)) * 100)
         return DashboardSnapshot(
             generated_at=datetime.now(UTC),
-            mode="live",
+            mode=self.mode,
             metrics=[
                 Metric(
                     label="This week",

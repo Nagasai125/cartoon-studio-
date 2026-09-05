@@ -24,7 +24,7 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 
-import { advanceDemoPipeline, getDashboardSnapshot, isDemoMode } from './lib/api'
+import { advanceDemoPipeline, getDashboardSnapshot, usesStaticSnapshot } from './lib/api'
 import { formatGeneratedAt, formatState } from './lib/format'
 import type { DashboardSnapshot, PipelineEvent } from './types'
 
@@ -77,7 +77,7 @@ function Dashboard({ snapshot }: { snapshot: DashboardSnapshot }) {
             <span className="mode-dot" />
             {snapshot.mode === 'live' ? 'Live workspace' : 'Demo workspace'}
           </span>
-          <button className="primary-button" disabled={isDemoMode || advanceMutation.isPending} onClick={() => advanceMutation.mutate()}>
+          <button className="primary-button" disabled={usesStaticSnapshot || advanceMutation.isPending} onClick={() => advanceMutation.mutate()}>
             <Play aria-hidden="true" size={15} fill="currentColor" />
             Advance simulation
           </button>
@@ -202,7 +202,7 @@ function Dashboard({ snapshot }: { snapshot: DashboardSnapshot }) {
 
 export function App() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
-  const dashboardQuery = useQuery({ queryKey: ['dashboard'], queryFn: getDashboardSnapshot, refetchInterval: isDemoMode ? false : 15_000 })
+  const dashboardQuery = useQuery({ queryKey: ['dashboard'], queryFn: getDashboardSnapshot, refetchInterval: usesStaticSnapshot ? false : 15_000 })
 
   return (
     <div className="app-shell">

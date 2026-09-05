@@ -9,26 +9,27 @@ Architecture baseline: signed off for implementation on 2026-09-03.
 
 GitHub repository: `https://github.com/Nagasai125/cartoon-studio-`
 
-Expected GitHub Pages URL after the first pushed `main` deployment:
+Live GitHub Pages URL:
 `https://nagasai125.github.io/cartoon-studio-/`
 
-The first runnable foundation is implemented. It includes a production-quality
-dashboard shell, typed FastAPI contract, simulated pipeline progression,
-database foundation, local infrastructure, tests, and GitHub Pages CI/CD.
+The first runnable foundation is implemented. Production deployment is
+GitHub-only: Actions generates a typed studio snapshot and Pages serves the
+dashboard. FastAPI, PostgreSQL, and MinIO remain optional local development
+tools rather than production dependencies.
 
 ## Current Build
 
 ```text
-  React dashboard -> FastAPI demo control plane -> simulated workflow
-          |                    |
-          |                    +-> PostgreSQL schema and migrations
-          |
-          +-> static demo mode for GitHub Pages before API deployment
+  GitHub Actions -> simulated workflow -> public-safe dashboard.json
+         |                                      |
+         +--------------> GitHub Pages <--------+
+
+  Local only: React dashboard -> FastAPI -> PostgreSQL and MinIO
 ```
 
 The simulation proves the control-plane contract without spending money or
-requiring AI credentials. Provider generation, authentication, durable task
-delivery, and publishing remain disabled until their infrastructure is ready.
+requiring AI credentials. Provider generation and publishing remain disabled
+until their GitHub Secrets and approval policies are ready.
 
 ## Run Locally
 
@@ -62,9 +63,14 @@ Run all checks:
 make check
 ```
 
-If `VITE_API_BASE_URL` is unset during a production build, the static dashboard
-uses clearly labeled demo data. Set the GitHub repository variable
-`VITE_API_BASE_URL` after the production API is deployed.
+GitHub Pages reads `data/dashboard.json`, generated during its Actions build. If
+that file is unavailable or invalid, the dashboard falls back to clearly
+labeled bundled demo data. `VITE_API_BASE_URL` is only for optional local API
+development.
+
+To exercise the GitHub-only simulation, open **Actions**, select **Deploy
+dashboard to GitHub Pages**, choose **Run workflow**, and select zero to five
+stages to advance. Five stages produces a snapshot waiting for owner approval.
 
 ## Product Intent
 
@@ -107,49 +113,27 @@ Normal operation requires only three owner actions:
 Prompts, seeds, provider payloads, retries, and stack traces remain available in
 an Advanced panel but are not part of the primary interface.
 
-## Signed Architecture
+## GitHub-Only Architecture
 
 ```text
-  PUBLIC STATIC SHELL                    PRIVATE CONTROL PLANE
-
-  +----------------------+               +----------------------+
-  | GitHub Pages         |    HTTPS      | FastAPI API          |
-  | React + TypeScript   |-------------->| Cloud Run            |
-  | Vite dashboard       |               +----------+-----------+
-  +----------+-----------+                          |
-             |                                      |
-             | OAuth                                v
-             v                           +----------------------+
-  +----------------------+               | PostgreSQL          |
-  | Supabase Auth        |               | Workflow source of  |
-  | GitHub owner login   |               | truth + pgvector     |
-  +----------------------+               +----------+-----------+
-                                                   |
-                                       transaction | + outbox
-                                                   v
-                                        +----------------------+
-                                        | Cloud Tasks          |
-                                        +----------+-----------+
-                                                   |
-                                                   v
-                                        +----------------------+
-                                        | Production Worker    |
-                                        | Cloud Run            |
-                                        +---+---------+--------+
-                                            |         |
-                                +-----------+         +-----------+
-                                v                                 v
-                     +----------------------+          +----------------------+
-                     | AI Provider APIs     |          | Private Storage      |
-                     | LLM/image/video/TTS  |          | Sources and media    |
-                     +----------------------+          +----------------------+
-
-                                       approved hash only
-                                                 |
-                                                 v
-                                       +----------------------+
-                                       | YouTube Publisher    |
-                                       +----------------------+
+  GitHub event or schedule
+            |
+            v
+  +-------------------------+
+  | GitHub Actions          |
+  | orchestrate, QA, render |
+  +------------+------------+
+               |
+       +-------+--------------------+
+       |                            |
+       v                            v
+  public-safe JSON             private YouTube upload
+       |                            |
+       v                            v
+  GitHub Pages                owner approval gate
+                                    |
+                                    v
+                              publish exact video
 ```
 
 ## Technology Baseline
@@ -157,35 +141,40 @@ an Advanced panel but are not part of the primary interface.
 | Layer | Selection |
 | --- | --- |
 | Frontend | React, TypeScript, Vite |
-| Frontend data | TanStack Query and generated OpenAPI client |
+| Frontend data | Public-safe JSON generated by GitHub Actions |
 | Styling | Tailwind CSS and accessible UI primitives |
-| Backend | Python, FastAPI, Pydantic, SQLAlchemy, Alembic |
-| Database | Managed PostgreSQL with pgvector |
-| Authentication | GitHub OAuth, restricted to the owner's immutable ID |
-| Storage | Private object storage with expiring signed URLs |
-| Orchestration | Coded event-driven state machine |
-| Job delivery | Managed HTTP task queue |
+| Local development API | Python, FastAPI, Pydantic, SQLAlchemy, Alembic |
+| Production state | Versioned workflow inputs, outputs, and manifests |
+| Authentication | GitHub repository and environment permissions |
+| Storage | Temporary runner workspace; non-sensitive reports as artifacts |
+| Orchestration | Coded state machine executed by GitHub Actions |
+| Job delivery | GitHub workflow events and manual dispatch |
 | Rendering | Deterministic HTML/SVG 2D renderer and FFmpeg |
 | Initial AI execution | Replaceable external provider APIs |
-| Backend deployment | Managed containers that can scale to zero |
+| Production execution | GitHub-hosted Actions runners |
 | Frontend deployment | GitHub Pages through GitHub Actions |
-| CI/CD identity | GitHub Actions OpenID Connect, without static cloud keys |
+| Secrets | GitHub Actions secrets, never exposed to Pages |
 
 ## Architecture Principles
 
 - Keep the owner interface simple even when production is complex.
 - Use one modular monolith before considering microservices.
-- Keep PostgreSQL authoritative; queues only deliver work.
-- Store media in object storage, never in the database or task payloads.
+- Keep public Pages data separate from secret and unpublished production data.
+- Keep unpublished media only in the temporary runner workspace and private
+  publishing destination.
 - Version sources, prompts, assets, episodes, policies, and models.
-- Make every job idempotent and every external call time-bounded.
+- Make every workflow idempotent and every external call time-bounded.
 - Record provenance and licensing before an asset can be reused.
 - Treat retrieved internet content as untrusted data.
 - Use deterministic rendering for letters, numbers, captions, and reusable 2D
   characters.
 - Put every provider behind an adapter.
 - Bound retries and cost; never create an infinite agent loop.
-- Bind approval to the final file hash and independently enforce it at publish.
+- Bind approval to the final file hash and private YouTube video ID.
+
+See [GitHub-only runtime](docs/github-only-runtime.md) for the active deployment
+decision. The detailed cloud architecture documents are retained as inactive
+reference material.
 
 ## Documentation Map
 
@@ -242,14 +231,13 @@ cartoon-studio/
 
 ## Delivery Sequence
 
-1. Repository, architecture decisions, local environment, CI, and auth.
-2. Dashboard with a simulated end-to-end episode run.
-3. Live knowledge and asset library.
-4. Durable state machine, task delivery, and provider adapters.
-5. Deterministic 2D media and audio production.
-6. Automated quality checks and selective regeneration.
-7. Hash-bound approval and isolated YouTube publishing.
-8. Staging, production, observability, backup, and recovery hardening.
+1. Repository, CI, GitHub Pages, and generated static dashboard state.
+2. GitHub Actions simulation with retained public-safe reports.
+3. Provider adapters and bounded production workflows.
+4. Deterministic 2D media and audio production in the runner workspace.
+5. Automated quality checks and selective regeneration.
+6. Private YouTube upload, hash-bound approval, and isolated publishing.
+7. Scheduled pilot production and Actions usage monitoring.
 
 ## Explicitly Deferred
 
@@ -262,15 +250,16 @@ cartoon-studio/
 - n8n as the workflow owner
 - Personalized child accounts or child data collection
 - Publication without final owner approval
+- Cloud APIs, workers, databases, queues, and object storage
 
 ## Sign-Off Conditions
 
 The architecture remains approved while these conditions hold:
 
-- GitHub Pages contains no secrets or private data.
-- All commands are authorized by the backend.
-- PostgreSQL remains the workflow source of truth.
+- GitHub Pages, logs, and artifacts contain no secrets or private media.
+- Production commands are authorized by GitHub workflow permissions.
+- GitHub Actions is the only production execution environment.
 - Knowledge and assets carry provenance and rights metadata.
 - Paid and generative operations have retry and budget limits.
-- Generation workers cannot access publishing credentials.
+- Generation jobs cannot access publishing credentials.
 - Publication verifies an approval for the exact final video hash.

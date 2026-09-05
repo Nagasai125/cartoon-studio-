@@ -4,6 +4,7 @@ dist/
 coverage/
 playwright-report/
 test-results/
+apps/dashboard/public/data/dashboard.json
 
 # Python
 .venv/

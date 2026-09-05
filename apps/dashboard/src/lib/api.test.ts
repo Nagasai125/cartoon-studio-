@@ -23,7 +23,7 @@ describe('getDashboardSnapshot', () => {
     vi.stubGlobal('fetch', fetchMock)
 
     await expect(getDashboardSnapshot()).resolves.toEqual(generatedSnapshot)
-    expect(fetchMock).toHaveBeenCalledWith('/data/dashboard.json', {
+    expect(fetchMock).toHaveBeenCalledWith(`${import.meta.env.BASE_URL}data/dashboard.json`, {
       cache: 'no-store',
       headers: { Accept: 'application/json' },
     })

@@ -1,4 +1,5 @@
 import json
+import re
 from pathlib import Path
 
 from cartoon_studio.domain.api_models import DashboardSnapshot, PipelineState
@@ -14,6 +15,7 @@ def test_export_snapshot_writes_camel_case_contract(tmp_path: Path) -> None:
 
     assert snapshot.mode == "demo"
     assert validated.active_episode.state == PipelineState.NEEDS_APPROVAL
+    assert re.fullmatch(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z", payload["generatedAt"])
     assert "generatedAt" in payload
     assert "activeEpisode" in payload
     assert "upcomingEpisodes" in payload

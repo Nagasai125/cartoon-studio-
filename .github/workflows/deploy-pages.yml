@@ -5,10 +5,27 @@ on:
     branches: [main]
     paths:
       - "apps/dashboard/**"
+      - "packages/pipeline/src/cartoon_studio/domain/api_models.py"
+      - "packages/pipeline/src/cartoon_studio/workflows/**"
       - "package.json"
       - "package-lock.json"
+      - "pyproject.toml"
+      - "uv.lock"
       - ".github/workflows/deploy-pages.yml"
   workflow_dispatch:
+    inputs:
+      snapshot_steps:
+        description: Simulated stages to advance before publishing the snapshot
+        required: true
+        default: "0"
+        type: choice
+        options:
+          - "0"
+          - "1"
+          - "2"
+          - "3"
+          - "4"
+          - "5"
 
 permissions:
   contents: read
@@ -32,15 +49,40 @@ jobs:
           node-version: 24
           cache: npm
 
+      - name: Set up Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        run: python -m pip install uv==0.10.2
+
       - name: Install locked dependencies
         run: npm ci
+
+      - name: Install locked Python dependencies
+        run: uv sync --locked
 
       - name: Verify dashboard
         run: npm run lint && npm run typecheck && npm run test
 
-      - name: Build dashboard
+      - name: Generate public dashboard snapshot
         env:
-          VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
+          PYTHONPATH: packages/pipeline/src
+          SNAPSHOT_STEPS: ${{ inputs.snapshot_steps || '0' }}
+        run: >-
+          uv run python -m cartoon_studio.workflows.export_snapshot
+          --steps "$SNAPSHOT_STEPS"
+          --output apps/dashboard/public/data/dashboard.json
+
+      - name: Upload dashboard snapshot
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: dashboard-snapshot-${{ github.run_id }}-${{ github.run_attempt }}
+          path: apps/dashboard/public/data/dashboard.json
+          retention-days: 30
+
+      - name: Build dashboard
         run: npm run build
 
       - name: Configure Pages

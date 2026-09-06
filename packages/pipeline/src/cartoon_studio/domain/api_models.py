@@ -1,7 +1,8 @@
-from datetime import datetime
+from datetime import UTC, datetime
 from enum import StrEnum
+from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_serializer
 
 
 def to_camel(value: str) -> str:
@@ -36,7 +37,7 @@ class Metric(ApiModel):
     label: str
     value: str
     detail: str
-    tone: str
+    tone: Literal["neutral", "positive", "warning"]
 
 
 class PipelineEvent(ApiModel):
@@ -44,7 +45,7 @@ class PipelineEvent(ApiModel):
     time: str
     title: str
     detail: str
-    status: str
+    status: Literal["complete", "active", "waiting", "warning"]
 
 
 class EpisodeSummary(ApiModel):
@@ -69,12 +70,16 @@ class LibrarySummary(ApiModel):
 
 class DashboardSnapshot(ApiModel):
     generated_at: datetime
-    mode: str
+    mode: Literal["live", "demo"]
     metrics: list[Metric]
     active_episode: EpisodeSummary
     upcoming_episodes: list[EpisodeSummary]
     events: list[PipelineEvent]
     library: LibrarySummary
+
+    @field_serializer("generated_at")
+    def serialize_generated_at(self, value: datetime) -> str:
+        return value.astimezone(UTC).isoformat(timespec="milliseconds").replace("+00:00", "Z")
 
 
 class HealthResponse(ApiModel):

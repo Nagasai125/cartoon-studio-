@@ -26,17 +26,30 @@ import { useState } from 'react'
 
 import { advanceDemoPipeline, getDashboardSnapshot, usesStaticSnapshot } from './lib/api'
 import { formatGeneratedAt, formatState } from './lib/format'
-import type { DashboardSnapshot, PipelineEvent } from './types'
+import type { DashboardSnapshot, PipelineEvent, PipelineState } from './types'
 
 const navigation = [
   { label: 'Overview', icon: Gauge, active: true },
   { label: 'Productions', icon: Film },
-  { label: 'Review', icon: ShieldCheck, count: 1 },
+  { label: 'Review', icon: ShieldCheck },
   { label: 'Library', icon: Library },
   { label: 'Settings', icon: Settings },
 ]
 
-const stageLabels = ['Plan', 'Research', 'Script', 'Storyboard', 'Assets', 'Scenes', 'Audio', 'Render', 'Review']
+const productionStages: Array<{ label: string; state: PipelineState }> = [
+  { label: 'Plan', state: 'planning' },
+  { label: 'Research', state: 'researching' },
+  { label: 'Script', state: 'scripting' },
+  { label: 'Script QA', state: 'script_validation' },
+  { label: 'Storyboard', state: 'storyboarding' },
+  { label: 'Assets', state: 'asset_preparation' },
+  { label: 'Scenes', state: 'scene_production' },
+  { label: 'Scene QA', state: 'scene_validation' },
+  { label: 'Audio', state: 'audio_production' },
+  { label: 'Render', state: 'rendering' },
+  { label: 'Final QA', state: 'final_validation' },
+  { label: 'Review', state: 'needs_approval' },
+]
 
 function MetricCard({ metric }: { metric: DashboardSnapshot['metrics'][number] }) {
   return (
@@ -62,7 +75,11 @@ function Dashboard({ snapshot }: { snapshot: DashboardSnapshot }) {
     onSuccess: (data) => queryClient.setQueryData(['dashboard'], data),
   })
 
-  const completedStages = Math.max(1, Math.floor((snapshot.activeEpisode.progress / 100) * stageLabels.length))
+  const currentStage = productionStages.findIndex(({ state }) => state === snapshot.activeEpisode.state)
+  const completedStages = currentStage >= 0
+    ? currentStage
+    : Math.floor((snapshot.activeEpisode.progress / 100) * productionStages.length)
+  const needsReview = snapshot.activeEpisode.state === 'needs_approval'
 
   return (
     <>
@@ -70,7 +87,9 @@ function Dashboard({ snapshot }: { snapshot: DashboardSnapshot }) {
         <div>
           <p className="eyebrow">Production overview</p>
           <h1>Good morning, Nagasai.</h1>
-          <p className="page-description">Your studio is on schedule. One episode needs your attention.</p>
+          <p className="page-description">
+            {needsReview ? 'Automated QA passed. One episode needs your approval.' : 'The episode is progressing through its automated production gates.'}
+          </p>
         </div>
         <div className="header-actions">
           <span className={`mode-badge ${snapshot.mode === 'live' ? 'mode-live' : ''}`}>
@@ -120,10 +139,10 @@ function Dashboard({ snapshot }: { snapshot: DashboardSnapshot }) {
           </div>
 
           <ol className="stage-row" aria-label="Episode stages">
-            {stageLabels.map((stage, index) => (
-              <li key={stage} className={index < completedStages ? 'stage-complete' : index === completedStages ? 'stage-current' : ''}>
+            {productionStages.map((stage, index) => (
+              <li key={stage.state} className={index < completedStages ? 'stage-complete' : index === completedStages ? 'stage-current' : ''}>
                 <span>{index < completedStages ? <Check aria-hidden="true" size={11} /> : index + 1}</span>
-                <small>{stage}</small>
+                <small>{stage.label}</small>
               </li>
             ))}
           </ol>
@@ -203,6 +222,7 @@ function Dashboard({ snapshot }: { snapshot: DashboardSnapshot }) {
 export function App() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const dashboardQuery = useQuery({ queryKey: ['dashboard'], queryFn: getDashboardSnapshot, refetchInterval: usesStaticSnapshot ? false : 15_000 })
+  const reviewCount = dashboardQuery.data?.activeEpisode.state === 'needs_approval' ? 1 : 0
 
   return (
     <div className="app-shell">
@@ -213,13 +233,16 @@ export function App() {
           <button className="mobile-close" aria-label="Close navigation" onClick={() => setMobileNavOpen(false)}><X size={18} /></button>
         </div>
         <nav aria-label="Primary navigation">
-          {navigation.map(({ label, icon: Icon, active, count }) => (
-            <button key={label} className={active ? 'nav-active' : ''}>
-              <Icon aria-hidden="true" size={17} />
-              <span>{label}</span>
-              {count ? <small>{count}</small> : null}
-            </button>
-          ))}
+          {navigation.map(({ label, icon: Icon, active }) => {
+            const count = label === 'Review' ? reviewCount : 0
+            return (
+              <button key={label} className={active ? 'nav-active' : ''}>
+                <Icon aria-hidden="true" size={17} />
+                <span>{label}</span>
+                {count ? <small>{count}</small> : null}
+              </button>
+            )
+          })}
         </nav>
         <div className="sidebar-bottom">
           <div className="system-health"><span /><div><strong>Systems nominal</strong><small>All services available</small></div></div>

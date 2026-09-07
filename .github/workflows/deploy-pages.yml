@@ -1,17 +1,6 @@
-name: Deploy dashboard to GitHub Pages
+name: Deploy demo dashboard to GitHub Pages
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - "apps/dashboard/**"
-      - "packages/pipeline/src/cartoon_studio/domain/api_models.py"
-      - "packages/pipeline/src/cartoon_studio/workflows/**"
-      - "package.json"
-      - "package-lock.json"
-      - "pyproject.toml"
-      - "uv.lock"
-      - ".github/workflows/deploy-pages.yml"
   workflow_dispatch:
     inputs:
       snapshot_steps:
@@ -30,13 +19,10 @@ on:
 permissions:
   contents: read
 
-concurrency:
-  group: pages
-  cancel-in-progress: true
-
 jobs:
   build:
     name: Build dashboard
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -102,6 +88,9 @@ jobs:
       contents: read
       pages: write
       id-token: write
+    concurrency:
+      group: pages
+      cancel-in-progress: true
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

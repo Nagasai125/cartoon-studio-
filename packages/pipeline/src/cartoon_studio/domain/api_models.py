@@ -19,6 +19,7 @@ class PipelineState(StrEnum):
     PLANNING = "planning"
     RESEARCHING = "researching"
     SCRIPTING = "scripting"
+    SCRIPT_VALIDATION = "script_validation"
     STORYBOARDING = "storyboarding"
     ASSET_PREPARATION = "asset_preparation"
     SCENE_PRODUCTION = "scene_production"
@@ -31,6 +32,8 @@ class PipelineState(StrEnum):
     PUBLISHING = "publishing"
     PUBLISHED = "published"
     FAILED = "failed"
+    PAUSED = "paused"
+    CANCELLED = "cancelled"
 
 
 class Metric(ApiModel):

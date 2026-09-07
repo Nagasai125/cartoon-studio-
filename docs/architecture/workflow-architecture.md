@@ -7,9 +7,12 @@ events, human approval, and recovery.
 
 ## Core Decision
 
-Use a coded event-driven state machine. PostgreSQL is authoritative and Cloud
-Tasks delivers work. No process remains suspended while waiting for a provider
-or human.
+Use a coded event-driven state machine. For the active GitHub-only pilot, an
+immutable, public-safe checkpoint artifact is authoritative and each resume is
+an explicit workflow dispatch. The Pages snapshot is never authoritative.
+
+The PostgreSQL and Cloud Tasks design below is retained as an inactive scaling
+reference. No process remains suspended while waiting for a provider or human.
 
 ## Episode State Machine
 

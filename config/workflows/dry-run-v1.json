@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "definitionVersion": "dry-run-v1",
+  "currency": "USD",
+  "maximumBudgetMicros": 10000000,
+  "publishingEnabled": false,
+  "stages": [
+    {"state": "planning", "attemptLimit": 2, "deadlineMinutes": 10, "simulatedCostMicros": 100000, "outputItems": 1, "outputDurationSeconds": 0, "validatorCount": 0},
+    {"state": "researching", "attemptLimit": 2, "deadlineMinutes": 15, "simulatedCostMicros": 200000, "outputItems": 4, "outputDurationSeconds": 0, "validatorCount": 4},
+    {"state": "scripting", "attemptLimit": 2, "deadlineMinutes": 15, "simulatedCostMicros": 300000, "outputItems": 1, "outputDurationSeconds": 360, "validatorCount": 0},
+    {"state": "script_validation", "attemptLimit": 2, "deadlineMinutes": 10, "simulatedCostMicros": 50000, "outputItems": 8, "outputDurationSeconds": 0, "validatorCount": 8},
+    {"state": "storyboarding", "attemptLimit": 2, "deadlineMinutes": 15, "simulatedCostMicros": 250000, "outputItems": 12, "outputDurationSeconds": 360, "validatorCount": 0},
+    {"state": "asset_preparation", "attemptLimit": 2, "deadlineMinutes": 30, "simulatedCostMicros": 1000000, "outputItems": 16, "outputDurationSeconds": 0, "validatorCount": 5},
+    {"state": "scene_production", "attemptLimit": 2, "deadlineMinutes": 120, "simulatedCostMicros": 2000000, "outputItems": 12, "outputDurationSeconds": 360, "validatorCount": 0},
+    {"state": "scene_validation", "attemptLimit": 2, "deadlineMinutes": 30, "simulatedCostMicros": 200000, "outputItems": 12, "outputDurationSeconds": 360, "validatorCount": 12},
+    {"state": "audio_production", "attemptLimit": 2, "deadlineMinutes": 45, "simulatedCostMicros": 700000, "outputItems": 4, "outputDurationSeconds": 360, "validatorCount": 4},
+    {"state": "rendering", "attemptLimit": 2, "deadlineMinutes": 45, "simulatedCostMicros": 300000, "outputItems": 1, "outputDurationSeconds": 360, "validatorCount": 3},
+    {"state": "final_validation", "attemptLimit": 2, "deadlineMinutes": 20, "simulatedCostMicros": 50000, "outputItems": 8, "outputDurationSeconds": 360, "validatorCount": 8}
+  ]
+}

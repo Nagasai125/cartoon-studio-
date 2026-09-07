@@ -1,0 +1,161 @@
+name: Run dry-run episode
+
+on:
+  workflow_dispatch:
+    inputs:
+      episode:
+        description: Versioned episode brief
+        required: true
+        default: letter-b
+        type: choice
+        options:
+          - letter-b
+      stop_after:
+        description: Stop after a stage, or run through final QA
+        required: true
+        default: complete
+        type: choice
+        options:
+          - complete
+          - planning
+          - researching
+          - scripting
+          - script_validation
+          - storyboarding
+          - asset_preparation
+          - scene_production
+          - scene_validation
+          - audio_production
+          - rendering
+          - final_validation
+      resume_run_id:
+        description: Optional prior dry-run workflow run ID
+        required: false
+        type: string
+      resume_attempt:
+        description: Attempt number of the prior run
+        required: true
+        default: "1"
+        type: string
+      budget_micros:
+        description: Simulated episode budget in USD micros
+        required: true
+        default: "10000000"
+        type: string
+
+permissions:
+  actions: read
+  contents: read
+
+concurrency:
+  group: dry-run-${{ inputs.episode }}
+  cancel-in-progress: false
+
+jobs:
+  produce:
+    name: Produce dry-run episode
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+
+      - name: Set up Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        run: python -m pip install uv==0.10.2
+
+      - name: Install locked Python dependencies
+        run: uv sync --locked
+
+      - name: Verify workflow contracts
+        run: uv run pytest tests/workflow
+
+      - name: Download checkpoint to resume
+        if: inputs.resume_run_id != ''
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ inputs.resume_run_id }}
+          name: episode-checkpoint-${{ inputs.episode }}-${{ inputs.resume_run_id }}-${{ inputs.resume_attempt }}
+          path: ${{ runner.temp }}/resume
+
+      - name: Execute episode state machine
+        env:
+          BRIEF_PATH: config/episodes/${{ inputs.episode }}.json
+          BUDGET_MICROS: ${{ inputs.budget_micros }}
+          CHECKPOINT_IN: ${{ inputs.resume_run_id != '' && format('{0}/resume/checkpoint.json', runner.temp) || '' }}
+          DASHBOARD_OUT: apps/dashboard/public/data/dashboard.json
+          POLICY_PATH: config/workflows/dry-run-v1.json
+          PYTHONPATH: packages/pipeline/src
+          STOP_AFTER: ${{ inputs.stop_after }}
+        run: |
+          args=(
+            --brief "$BRIEF_PATH"
+            --policy "$POLICY_PATH"
+            --checkpoint-out "$RUNNER_TEMP/output/checkpoint.json"
+            --dashboard-out "$DASHBOARD_OUT"
+            --budget-micros "$BUDGET_MICROS"
+          )
+          if [[ -n "$CHECKPOINT_IN" ]]; then
+            args+=(--checkpoint-in "$CHECKPOINT_IN")
+          else
+            args+=(--run-id "github-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}")
+          fi
+          if [[ "$STOP_AFTER" != "complete" ]]; then
+            args+=(--stop-after "$STOP_AFTER")
+          fi
+          uv run python -m cartoon_studio.workflows.run_episode "${args[@]}"
+          cp "$DASHBOARD_OUT" "$RUNNER_TEMP/output/dashboard.json"
+
+      - name: Upload public-safe checkpoint
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: episode-checkpoint-${{ inputs.episode }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/output/
+          retention-days: 30
+
+      - name: Set up Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install locked frontend dependencies
+        run: npm ci
+
+      - name: Build dashboard
+        run: npm run build
+
+      - name: Configure Pages
+        uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4
+        with:
+          path: apps/dashboard/dist
+
+  deploy:
+    name: Deploy workflow dashboard
+    needs: produce
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    concurrency:
+      group: pages
+      cancel-in-progress: true
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy Pages artifact
+        id: deployment
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4

@@ -1,4 +1,4 @@
-.PHONY: setup dev-api dev-dashboard infra-up infra-down migrate check
+.PHONY: setup dev-api dev-dashboard dry-run infra-up infra-down migrate check
 
 setup:
 	uv sync
@@ -9,6 +9,9 @@ dev-api:
 
 dev-dashboard:
 	npm run dev
+
+dry-run:
+	PYTHONPATH=packages/pipeline/src uv run python -m cartoon_studio.workflows.run_episode --brief config/episodes/letter-b.json --policy config/workflows/dry-run-v1.json --checkpoint-out .data/workflow/checkpoint.json --dashboard-out apps/dashboard/public/data/dashboard.json --run-id local-dry-run
 
 infra-up:
 	docker compose up -d --wait postgres minio

@@ -2,7 +2,7 @@
 
 ## Reporting
 
-This project is private during initial development. Security issues should be
+This repository and its Pages site are public. Security issues should be
 reported directly to the repository owner and must not be placed in public
 issue content.
 
@@ -17,8 +17,12 @@ Never commit:
 - Signed media URLs
 - Production environment files
 
-Use ignored local environment files during development and managed secret
-storage in production.
+Use ignored local environment files during development and GitHub Actions
+Secrets for production provider credentials.
+
+Actions logs, caches, artifacts, Pages output, and releases must not contain
+prompts, private source material, or unpublished media. Workflow checkpoint
+artifacts contain allowlisted public-safe metadata only.
 
 ## Publishing Invariant
 

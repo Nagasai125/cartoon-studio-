@@ -92,7 +92,7 @@ h1 { margin-bottom: 7px; font-family: Georgia, "Times New Roman", serif; font-si
 .progress-heading strong { color: var(--green); font-size: 12px; }
 .progress-track { overflow: hidden; height: 6px; background: #e4e5de; border-radius: 99px; }
 .progress-track span { display: block; height: 100%; background: #527c5f; border-radius: inherit; transition: width 260ms var(--ease-out); }
-.stage-row { display: grid; grid-template-columns: repeat(9, 1fr); gap: 3px; padding: 0; margin: 20px 0 0; list-style: none; }
+.stage-row { display: grid; grid-template-columns: repeat(12, 1fr); gap: 3px; padding: 0; margin: 20px 0 0; list-style: none; }
 .stage-row li { display: flex; min-width: 0; flex-direction: column; align-items: center; gap: 6px; color: #9a9d96; }
 .stage-row li > span { display: grid; place-items: center; width: 21px; height: 21px; background: #ebeae5; border: 1px solid #ddddd6; border-radius: 50%; font-size: 9px; }
 .stage-row small { overflow: hidden; width: 100%; font-size: 8px; text-align: center; text-overflow: ellipsis; }
@@ -157,7 +157,7 @@ h1 { margin-bottom: 7px; font-family: Georgia, "Times New Roman", serif; font-si
   .metric-card { min-height: 105px; padding: 15px; }
   .metric-card strong { font-size: 19px; }
   .panel { padding: 18px; }
-  .stage-row { overflow-x: auto; grid-template-columns: repeat(9, 58px); padding-bottom: 5px; }
+  .stage-row { overflow-x: auto; grid-template-columns: repeat(12, 58px); padding-bottom: 5px; }
   .library-stats { grid-template-columns: 1fr; }
 }
 

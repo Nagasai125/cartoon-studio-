@@ -3,10 +3,10 @@ import type { DashboardSnapshot, EpisodeSummary, Metric, PipelineEvent, Pipeline
 
 const configuredApiBaseUrl = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, '')
 const pipelineStates = new Set<PipelineState>([
-  'queued', 'planning', 'researching', 'scripting', 'storyboarding',
+  'queued', 'planning', 'researching', 'scripting', 'script_validation', 'storyboarding',
   'asset_preparation', 'scene_production', 'scene_validation',
   'audio_production', 'rendering', 'final_validation', 'needs_approval',
-  'approved', 'publishing', 'published', 'failed',
+  'approved', 'publishing', 'published', 'failed', 'paused', 'cancelled',
 ])
 const metricTones = new Set(['neutral', 'positive', 'warning'])
 const eventStatuses = new Set(['complete', 'active', 'waiting', 'warning'])

@@ -12,24 +12,26 @@ GitHub repository: `https://github.com/Nagasai125/cartoon-studio-`
 Live GitHub Pages URL:
 `https://nagasai125.github.io/cartoon-studio-/`
 
-The first runnable foundation is implemented. Production deployment is
-GitHub-only: Actions generates a typed studio snapshot and Pages serves the
-dashboard. FastAPI, PostgreSQL, and MinIO remain optional local development
-tools rather than production dependencies.
+The first complete dry-run workflow is implemented. Production deployment is
+GitHub-only: Actions executes a versioned episode state machine, stores a
+public-safe resumable checkpoint, and deploys its dashboard snapshot to Pages.
+FastAPI, PostgreSQL, and MinIO remain optional local development tools.
 
 ## Current Build
 
 ```text
-  GitHub Actions -> simulated workflow -> public-safe dashboard.json
-         |                                      |
-         +--------------> GitHub Pages <--------+
+  episode brief -> GitHub Actions -> 11-stage dry-run -> needs approval
+                         |                    |
+                         |                    +-> public-safe checkpoint
+                         +----------------------> GitHub Pages
 
   Local only: React dashboard -> FastAPI -> PostgreSQL and MinIO
 ```
 
-The simulation proves the control-plane contract without spending money or
-requiring AI credentials. Provider generation and publishing remain disabled
-until their GitHub Secrets and approval policies are ready.
+The dry run proves transitions, resume integrity, idempotency, bounded retries,
+budget enforcement, QA, and the owner gate without spending money or requiring
+AI credentials. Provider generation and publishing remain disabled until their
+GitHub Secrets and approval policies are ready.
 
 ## Run Locally
 
@@ -63,14 +65,22 @@ Run all checks:
 make check
 ```
 
+Run a complete local dry-run episode:
+
+```bash
+make dry-run
+```
+
 GitHub Pages reads `data/dashboard.json`, generated during its Actions build. If
 that file is unavailable or invalid, the dashboard falls back to clearly
 labeled bundled demo data. `VITE_API_BASE_URL` is only for optional local API
 development.
 
-To exercise the GitHub-only simulation, open **Actions**, select **Deploy
-dashboard to GitHub Pages**, choose **Run workflow**, and select zero to five
-stages to advance. Five stages produces a snapshot waiting for owner approval.
+To run the complete GitHub workflow, open **Actions**, select **Run dry-run
+episode**, and choose **Run workflow**. A run may stop after any stage. To
+resume, start another run with the prior GitHub run ID and attempt number. A
+complete run stops at `needs_approval`, archives only public-safe metadata, and
+deploys the resulting snapshot.
 
 ## Product Intent
 

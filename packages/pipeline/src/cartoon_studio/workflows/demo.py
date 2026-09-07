@@ -15,6 +15,7 @@ DEMO_STATES = [
     PipelineState.PLANNING,
     PipelineState.RESEARCHING,
     PipelineState.SCRIPTING,
+    PipelineState.SCRIPT_VALIDATION,
     PipelineState.STORYBOARDING,
     PipelineState.ASSET_PREPARATION,
     PipelineState.SCENE_PRODUCTION,
@@ -29,7 +30,7 @@ DEMO_STATES = [
 class DemoStudio:
     def __init__(self, mode: Literal["live", "demo"] = "live") -> None:
         self.mode: Literal["live", "demo"] = mode
-        self.state_index = 5
+        self.state_index = 6
         self._lock = Lock()
         self.events: list[PipelineEvent] = [
             PipelineEvent(
@@ -84,9 +85,13 @@ class DemoStudio:
                 ),
                 Metric(
                     label="Needs review",
-                    value="1 episode",
-                    detail="Final QA passed",
-                    tone="warning",
+                    value="1 episode" if state == PipelineState.NEEDS_APPROVAL else "0 episodes",
+                    detail=(
+                        "Final QA passed"
+                        if state == PipelineState.NEEDS_APPROVAL
+                        else "No episodes waiting"
+                    ),
+                    tone="warning" if state == PipelineState.NEEDS_APPROVAL else "neutral",
                 ),
                 Metric(
                     label="Quality gates",

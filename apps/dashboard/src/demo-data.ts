@@ -5,7 +5,7 @@ export const demoSnapshot: DashboardSnapshot = {
   mode: 'demo',
   metrics: [
     { label: 'This week', value: '3 episodes', detail: '1 active, 2 queued', tone: 'neutral' },
-    { label: 'Needs review', value: '1 episode', detail: 'Final QA passed', tone: 'warning' },
+    { label: 'Needs review', value: '0 episodes', detail: 'No episodes waiting', tone: 'neutral' },
     { label: 'Quality gates', value: '24 / 25', detail: 'One audio warning', tone: 'positive' },
     { label: 'Monthly spend', value: '$42.18', detail: 'Budget not configured', tone: 'neutral' },
   ],

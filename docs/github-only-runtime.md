@@ -24,7 +24,8 @@ target.
 ```
 
 - GitHub Pages serves the dashboard and public-safe status snapshots.
-- GitHub Actions runs orchestration, validation, rendering, and publishing.
+- GitHub Actions runs orchestration and validation. Rendering and publishing
+  will use separate credential boundaries when enabled.
 - GitHub Secrets stores provider and YouTube credentials.
 - GitHub Environments provides the final owner approval gate.
 - Workflow artifacts retain non-sensitive reports and status history only.
@@ -43,11 +44,27 @@ reviews that private upload. A separate environment-protected workflow may make
 the exact approved YouTube video public after validating its recorded hash and
 video ID.
 
-## Current Milestone
+## Workflow Checkpoints
 
-`deploy-pages.yml` exports a typed simulation snapshot, archives that public-safe
-JSON for 30 days, builds the dashboard, and deploys it. Manual runs can advance
-the simulation to exercise each dashboard state without a backend.
+`dry-run-episode.yml` executes the versioned state sequence from planning through
+final validation. Every activity has a stable idempotency key, attempt limit,
+deadline, simulated cost, input digest, and output digest. A checkpoint can be
+resumed only from an explicitly selected prior workflow run and must match the
+current episode and policy versions.
+
+The checkpoint artifact replaces PostgreSQL and outbox semantics for this
+GitHub-only pilot. It is immutable per workflow attempt, contains public-safe
+metadata only, and expires after 30 days. The Pages snapshot is a projection and
+is never accepted as workflow input.
+
+The dry-run provider produces deterministic metadata without media or paid API
+calls. Budget exhaustion and checkpoint tampering fail closed. The terminal
+state is `needs_approval`; approval and publishing are unreachable from this
+workflow.
+
+`deploy-pages.yml` is a manual fallback for intentionally restoring the demo
+dashboard. It does not run on code pushes or advance authoritative episode
+state, so it cannot accidentally overwrite a workflow snapshot.
 
 Provider calls, scheduled production, and YouTube publishing remain disabled
 until their credentials and policies are configured.

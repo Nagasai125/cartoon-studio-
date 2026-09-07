@@ -5,7 +5,17 @@
 This document defines authoritative records, relationships, versioning,
 storage, search, migrations, retention, and recovery.
 
-## Data Principles
+## Active GitHub-Only Data Principles
+
+- Versioned checkpoint artifacts are authoritative for active pilot runs.
+- Checkpoints contain metadata and hashes only; unpublished media is never an
+  Actions artifact.
+- Each resume names an exact prior workflow run and validates the checkpoint,
+  episode, definition, policy, and digest chain.
+- The GitHub Pages snapshot is a read-only projection and never workflow input.
+- PostgreSQL and object storage below are inactive scaling references.
+
+## Cloud-Ready Reference Principles
 
 - PostgreSQL is authoritative for metadata and state.
 - Object storage is authoritative for large immutable artifacts.

@@ -3,6 +3,7 @@ export type PipelineState =
   | 'planning'
   | 'researching'
   | 'scripting'
+  | 'script_validation'
   | 'storyboarding'
   | 'asset_preparation'
   | 'scene_production'
@@ -15,6 +16,8 @@ export type PipelineState =
   | 'publishing'
   | 'published'
   | 'failed'
+  | 'paused'
+  | 'cancelled'
 
 export interface Metric {
   label: string

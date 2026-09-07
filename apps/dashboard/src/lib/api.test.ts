@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { demoSnapshot } from '../demo-data'
+import type { DashboardSnapshot } from '../types'
 import { getDashboardSnapshot } from './api'
 
 function jsonResponse(body: unknown, ok = true): Response {
@@ -15,9 +16,10 @@ describe('getDashboardSnapshot', () => {
   afterEach(() => vi.unstubAllGlobals())
 
   it('loads the generated GitHub Pages snapshot', async () => {
-    const generatedSnapshot = {
+    const generatedSnapshot: DashboardSnapshot = {
       ...demoSnapshot,
       generatedAt: '2026-09-04T06:00:00Z',
+      activeEpisode: { ...demoSnapshot.activeEpisode, state: 'script_validation' },
     }
     const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(jsonResponse(generatedSnapshot))
     vi.stubGlobal('fetch', fetchMock)
